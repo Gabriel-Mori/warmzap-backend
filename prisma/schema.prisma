@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  chips     Chip[]
+  plans     Plan[]
+}
+
+model Chip {
+  id                String       @id @default(uuid())
+  phoneNumber       String       @unique
+  status            ChipStatus   @default(PENDING)
+  startDate         DateTime     @default(now())
+  endDate           DateTime?
+  userId            String
+  user              User         @relation(fields: [userId], references: [id])
+  simulations       Simulation[]
+  messages          Message[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+model Simulation {
+  id          String        @id @default(uuid())
+  startDate   DateTime      @default(now())
+  endDate     DateTime?
+  status      SimulationStatus @default(RUNNING)
+  chipId      String
+  chip        Chip          @relation(fields: [chipId], references: [id])
+  messages    Message[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Message {
+  id           String   @id @default(uuid())
+  content      String
+  direction    MessageDirection
+  timestamp    DateTime @default(now())
+  chipId       String
+  chip         Chip     @relation(fields: [chipId], references: [id])
+  simulationId String
+  simulation   Simulation @relation(fields: [simulationId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Plan {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  duration    Int      // in days
+  chipCount   Int
+  hasAI       Boolean  @default(false)
+  hasAPI      Boolean  @default(false)
+  hasPriority Boolean  @default(false)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum ChipStatus {
+  PENDING
+  ACTIVE
+  PAUSED
+  COMPLETED
+  BLOCKED
+}
+
+enum SimulationStatus {
+  RUNNING
+  PAUSED
+  COMPLETED
+  FAILED
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
