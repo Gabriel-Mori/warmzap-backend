@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 
 const prisma = new PrismaClient();
 
-export const getPlans = async (req: Request, res: Response): Promise<void> => {
+export const getPlans = async (req: Request, res: Response): Promise<any> => {
   try {
     const plans = await prisma.plan.findMany({
       where: {
@@ -11,14 +11,14 @@ export const getPlans = async (req: Request, res: Response): Promise<void> => {
       },
     });
 
-    res.status(200).json(plans);
+    return res.status(200).json(plans);
   } catch (error) {
     console.error("Get plans error:", error);
     res.status(500).json({ message: "Erro interno do servidor" });
   }
 };
 
-export const getPlan = async (req: Request, res: Response): Promise<void> => {
+export const getPlan = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
 
@@ -27,42 +27,37 @@ export const getPlan = async (req: Request, res: Response): Promise<void> => {
     });
 
     if (!plan) {
-      res.status(404).json({ message: "Plano não encontrado" });
-      return;
+      return res.status(404).json({ message: "Plano não encontrado" });
     }
 
     if (plan.userId) {
       const userId = req.user?.id;
 
       if (!userId || plan.userId !== userId) {
-        res.status(403).json({ message: "Não autorizado" });
-        return;
+        return res.status(403).json({ message: "Não autorizado" });
       }
     }
 
-    res.status(200).json(plan);
+    return res.status(200).json(plan);
   } catch (error) {
-    console.error("Get plan error:", error);
-    res.status(500).json({ message: "Erro interno do servidor" });
+    return res.status(500).json({ message: "Erro interno do servidor" });
   }
 };
 
 export const purchasePlan = async (
   req: Request,
   res: Response
-): Promise<void> => {
+): Promise<any> => {
   try {
     const userId = req.user?.id;
     const { planId } = req.body;
 
     if (!userId) {
-      res.status(401).json({ message: "Não autorizado" });
-      return;
+      return res.status(401).json({ message: "Não autorizado" });
     }
 
     if (!planId) {
-      res.status(400).json({ message: "ID do plano é obrigatório" });
-      return;
+      return res.status(400).json({ message: "ID do plano é obrigatório" });
     }
 
     const plan = await prisma.plan.findUnique({
@@ -70,8 +65,7 @@ export const purchasePlan = async (
     });
 
     if (!plan) {
-      res.status(404).json({ message: "Plano não encontrado" });
-      return;
+      return res.status(404).json({ message: "Plano não encontrado" });
     }
 
     const userPlan = await prisma.plan.create({
@@ -88,26 +82,24 @@ export const purchasePlan = async (
       },
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Plano adquirido com sucesso",
       plan: userPlan,
     });
   } catch (error) {
-    console.error("Purchase plan error:", error);
-    res.status(500).json({ message: "Erro interno do servidor" });
+    return res.status(500).json({ message: "Erro interno do servidor" });
   }
 };
 
 export const getUserPlans = async (
   req: Request,
   res: Response
-): Promise<void> => {
+): Promise<any> => {
   try {
     const userId = req.user?.id;
 
     if (!userId) {
-      res.status(401).json({ message: "Não autorizado" });
-      return;
+      return res.status(401).json({ message: "Não autorizado" });
     }
 
     const plans = await prisma.plan.findMany({
@@ -116,9 +108,8 @@ export const getUserPlans = async (
       },
     });
 
-    res.status(200).json(plans);
+    return res.status(200).json(plans);
   } catch (error) {
-    console.error("Get user plans error:", error);
-    res.status(500).json({ message: "Erro interno do servidor" });
+    return res.status(500).json({ message: "Erro interno do servidor" });
   }
 };

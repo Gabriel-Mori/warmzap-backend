@@ -11,53 +11,67 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   name      String
-  email     String   @unique
+  email     String    @unique
   password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   chips     Chip[]
   plans     Plan[]
+  sessions  Session[]
+}
+
+model Session {
+  id          Int       @id @default(autoincrement())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token       String    @unique
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  loggedOutAt DateTime?
 }
 
 model Chip {
-  id                String       @id @default(uuid())
-  phoneNumber       String       @unique
-  status            ChipStatus   @default(PENDING)
-  startDate         DateTime     @default(now())
-  endDate           DateTime?
-  userId            String
-  user              User         @relation(fields: [userId], references: [id])
-  simulations       Simulation[]
-  messages          Message[]
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  id          String       @id @default(uuid())
+  phoneNumber String       @unique
+  status      ChipStatus   @default(PENDING)
+  startDate   DateTime     @default(now())
+  endDate     DateTime?
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  isConnected Boolean @default(false)
+  simulations Simulation[]
+  messages    Message[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 model Simulation {
-  id          String        @id @default(uuid())
-  startDate   DateTime      @default(now())
-  endDate     DateTime?
-  status      SimulationStatus @default(RUNNING)
-  chipId      String
-  chip        Chip          @relation(fields: [chipId], references: [id])
-  messages    Message[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id        String           @id @default(uuid())
+  startDate DateTime         @default(now())
+  endDate   DateTime?
+  status    SimulationStatus @default(RUNNING)
+  chipId    String
+  chip      Chip             @relation(fields: [chipId], references: [id])
+  messages  Message[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
 }
 
 model Message {
-  id           String   @id @default(uuid())
+  id           String           @id @default(uuid())
   content      String
   direction    MessageDirection
-  timestamp    DateTime @default(now())
+  timestamp    DateTime         @default(now())
   chipId       String
-  chip         Chip     @relation(fields: [chipId], references: [id])
+  chip         Chip             @relation(fields: [chipId], references: [id])
   simulationId String
-  simulation   Simulation @relation(fields: [simulationId], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  simulation   Simulation       @relation(fields: [simulationId], references: [id])
+  from         String?          
+  to           String?         
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 }
 
 model Plan {
@@ -65,7 +79,7 @@ model Plan {
   name        String
   description String?
   price       Float
-  duration    Int      // in days
+  duration    Int // in days
   chipCount   Int
   hasAI       Boolean  @default(false)
   hasAPI      Boolean  @default(false)

@@ -41,8 +41,13 @@ export const register = async (req: Request, res: Response): Promise<any> => {
       },
     });
 
-    return res.status(201).json({
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.status(201).json({
       message: "Usuário criado com sucesso",
+      token,
       user: {
         id: user.id,
         name: user.name,
@@ -63,9 +68,9 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     });
 
     const userEmailOrPasswordIncorrect = () => {
-      return res
-        .status(401)
-        .json({ error: "Make sure your password or email are correct" });
+      return res.status(401).json({
+        error: "Certifique-se de que sua senha ou e-mail estejam corretos",
+      });
     };
 
     if (!(await schema.isValid(req.body))) {
@@ -98,7 +103,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       expiresIn: "7d",
     });
 
-    return res.status(200).json({
+    res.status(200).json({
       message: "Login realizado com sucesso",
       token,
       user: {
@@ -138,6 +143,6 @@ export const getProfile = async (req: Request, res: Response): Promise<any> => {
     return res.status(200).json(user);
   } catch (error) {
     console.error("Get profile error:", error);
-    return res.status(500).json({ message: "Erro interno do servidor" });
+    res.status(500).json({ message: "Erro interno do servidor" });
   }
 };
